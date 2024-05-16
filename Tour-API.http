@@ -1,0 +1,51 @@
+@Tour_API_HostAddress = http://localhost:5227
+
+GET {{Tour_API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+GET {{Tour_API_HostAddress}}/api/tours/
+Accept: application/json
+
+###
+
+GET {{Tour_API_HostAddress}}/api/tours/2
+Accept: application/json
+
+###
+
+POST {{Tour_API_HostAddress}}/api/tours/add
+Content-Type: application/json
+
+{
+  "id": 3,
+  "title": "City Explorer",
+  "categories": ["City", "Sightseeing"],
+  "rating": 4.8,
+  "price": 119.99,
+  "duration": "2 days 1 night",
+  "thumbnail":
+    "https://travelwp.physcode.com/main-demo/wp-content/uploads/sites/7/2016/11/c9f347c4-8b17-47b5-8594-a6947299d51f-430x323.jpg"
+}
+
+###
+
+PUT {{Tour_API_HostAddress}}/api/tours/edit/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "title": "City Explorer",
+  "categories": ["City", "Sightseeing"],
+  "rating": 4.8,
+  "price": 119.99,
+  "duration": "2 days 1 night",
+  "thumbnail":
+    "https://travelwp.physcode.com/main-demo/wp-content/uploads/sites/7/2016/11/c9f347c4-8b17-47b5-8594-a6947299d51f-430x323.jpg"
+} 
+
+###
+
+DELETE {{Tour_API_HostAddress}}/api/tours/delete/1
+Accept: application/json
