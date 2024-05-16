@@ -13,7 +13,6 @@ namespace Tour_API.Mappers
                 Title = tourModel.Title,
                 Categories = tourModel.Categories!,
                 DestinationId = tourModel.DestinationId,
-                Destination = tourModel.Destination,
                 Rating = tourModel.Rating,
                 Price = tourModel.Price,
                 Duration = tourModel.Duration,
