@@ -5,6 +5,7 @@ using Tour_API.DTOs;
 using Tour_API.DTOs.Tours;
 using Tour_API.Mappers;
 using Tour_API.Models;
+using Tour_API.Services.TourServices;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,20 +16,18 @@ namespace Tour_API.Controllers
     public class ToursController : ControllerBase
     {
         private readonly TourContext _context;
-        public ToursController(TourContext context)
+        private readonly ITourService _tourService;
+        public ToursController(TourContext context, ITourService tourService)
         {
             _context = context;
+            _tourService = tourService;
         }
 
         // GET: api/<ToursController>
         [HttpGet]
         public async Task<IActionResult> GetTours()
         {
-            var tours = await _context.Tours.ToListAsync();
-            /*foreach (var tour in tours)
-            {
-                tour.Destination = await _context.Destinations.FindAsync(tour.DestinationId);
-            }*/
+            var tours = await _tourService.GetAllAsync();
             var toursDto = tours.Select(t => t.ToTourDto());
             return Ok(tours);
         }
@@ -38,7 +37,7 @@ namespace Tour_API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get([FromRoute] int id)
         {
-            var tour = await _context.Tours.FindAsync(id);
+            var tour = await _tourService.GetByIdAsync(id);
             if (tour is null)
                 return NotFound();
             return Ok(tour.ToTourDto());
@@ -49,47 +48,29 @@ namespace Tour_API.Controllers
         public async Task<IActionResult> AddTour([FromBody] CreateTourDto tourDto)
         {
             var newTour = tourDto.FromCreateDtoToTour();
-            await _context.Tours.AddAsync(newTour);
-            await _context.SaveChangesAsync();
+            await _tourService.CreateAsync(newTour);
             return CreatedAtAction(nameof(Get), new {id = newTour.Id}, newTour.ToTourDto());
         }
 
         // PUT api/<ToursController>/5
-        [HttpPut]
-        [Route("edit/{id}")]
+        [HttpPut("edit/{id}")]
         public async Task<IActionResult> EditTour([FromRoute] int id, [FromBody] UpdateTourDto tourDto)
         {
-            var updateTour = await _context.Tours.FindAsync(id);
+            var updateTour = await _tourService.UpdateAsync(id, tourDto);
             // check tour exists or not
             if (updateTour is null)
-                return NotFound();
-            // update tour's params
-            updateTour.Title = tourDto.Title;
-            updateTour.DestinationId = tourDto.DestinationId;
-            updateTour.Categories = tourDto.Categories;
-            updateTour.Rating = tourDto.Rating;
-            updateTour.Price = tourDto.Price;
-            updateTour.Duration = tourDto.Duration;
-            updateTour.Thumbnail = tourDto.Thumbnail;
-            await _context.SaveChangesAsync();
+                return NotFound();     
             return NoContent();
         }
 
         // DELETE api/<ToursController>/5
-        [HttpDelete]
-        [Route("delete/{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             // check tour exists or not
-            var tour = await _context.Tours.FindAsync(id);
+            var tour = await _tourService.DeleteAsync(id);
             if (tour is null)
-            {
-                return NotFound();
-            }
-
-            _context.Tours.Remove(tour);
-            await _context.SaveChangesAsync();
-
+                return NotFound();  
             return NoContent();
         }
     }

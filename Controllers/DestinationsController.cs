@@ -5,6 +5,7 @@ using Tour_API.Data;
 using Tour_API.DTOs.Destinations;
 using Tour_API.DTOs.Tours;
 using Tour_API.Mappers;
+using Tour_API.Services.DestinationServices;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,17 +15,19 @@ namespace Tour_API.Controllers
     [ApiController]
     public class DestinationsController : ControllerBase
     {
-        private readonly TourContext _context;
-        public DestinationsController(TourContext context)
+       
+        private readonly IDestinationService _destinationService;
+        public DestinationsController(IDestinationService destinationService)
         {
-            _context = context;
+            _destinationService = destinationService;
+            
         }
         // GET: api/<DestinationsController>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {   
-            var Destinations = await _context.Destinations.Include(c => c.Tours).ToListAsync();
-            var destinationDto =  Destinations.Select(c => c.ToDestinationDto());
+            var destinations = await _destinationService.GetAllAsync();
+            var destinationDto =  destinations.Select(c => c.ToDestinationDto());
             return Ok(destinationDto);
         }
 
@@ -32,53 +35,39 @@ namespace Tour_API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get([FromRoute] int id)
         {
-            var destination = await _context.Destinations.Include(c => c.Tours).FirstOrDefaultAsync(i => i.Id == id);
+            var destination = await _destinationService.GetByIdAsync(id);
+            if(destination is null)
+                return NotFound();
             return Ok(destination);
         }
 
         // POST api/<DestinationsController>
-        [HttpPost]
+        [HttpPost("add")]
         public async Task<IActionResult> Post([FromBody] CreateDestinationDto destinationDto)
         {
             var newDestination = destinationDto.FromCreateDtoToDestination();
-            await _context.Destinations.AddAsync(newDestination);
-            await _context.SaveChangesAsync();
+            await _destinationService.CreateAsync(newDestination);
             return CreatedAtAction(nameof(Get), new { id = newDestination.Id }, newDestination.ToDestinationDto());
         }
 
         // PUT api/<DestinationsController>/5
-        [HttpPut]
-        [Route("edit/{id}")]
+        [HttpPut("edit/{id}")]
         public async Task<IActionResult> Put([FromRoute] int id, [FromBody] UpdateDestinationDto destinationDto)
-        {
-            var updateDestination = await _context.Destinations.FindAsync(id);
-            // check destination exists or not
-            if (updateDestination is null)
+        {           
+            var destination = await _destinationService.UpdateAsync(id, destinationDto);
+            if (destination is null)
                 return NotFound();
-            // update destination's params
-            updateDestination.Name = destinationDto.Name;
-            updateDestination.Description = destinationDto.Description;
-            updateDestination.Image = destinationDto.Image;
-            
-            await _context.SaveChangesAsync();
             return NoContent();
         }
 
         // DELETE api/<DestinationsController>/5
-        [HttpDelete]
-        [Route("delete/{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             // check tour exists or not
-            var destination = await _context.Destinations.FindAsync(id);
+            var destination = await _destinationService.DeleteAsync(id);
             if (destination is null)
-            {
                 return NotFound();
-            }
-
-            _context.Destinations.Remove(destination);
-            await _context.SaveChangesAsync();
-
             return NoContent();
         }
     }
