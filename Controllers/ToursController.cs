@@ -15,11 +15,9 @@ namespace Tour_API.Controllers
     [ApiController]
     public class ToursController : ControllerBase
     {
-        private readonly TourContext _context;
         private readonly ITourService _tourService;
-        public ToursController(TourContext context, ITourService tourService)
+        public ToursController(ITourService tourService)
         {
-            _context = context;
             _tourService = tourService;
         }
 
@@ -27,6 +25,8 @@ namespace Tour_API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetTours()
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var tours = await _tourService.GetAllAsync();
             var toursDto = tours.Select(t => t.ToTourDto());
             return Ok(tours);
@@ -34,9 +34,11 @@ namespace Tour_API.Controllers
 
 
         // GET api/<ToursController>/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> Get([FromRoute] int id)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var tour = await _tourService.GetByIdAsync(id);
             if (tour is null)
                 return NotFound();
@@ -47,15 +49,19 @@ namespace Tour_API.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> AddTour([FromBody] CreateTourDto tourDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var newTour = tourDto.FromCreateDtoToTour();
             await _tourService.CreateAsync(newTour);
             return CreatedAtAction(nameof(Get), new {id = newTour.Id}, newTour.ToTourDto());
         }
 
         // PUT api/<ToursController>/5
-        [HttpPut("edit/{id}")]
+        [HttpPut("edit/{id:int}")]
         public async Task<IActionResult> EditTour([FromRoute] int id, [FromBody] UpdateTourDto tourDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var updateTour = await _tourService.UpdateAsync(id, tourDto);
             // check tour exists or not
             if (updateTour is null)
@@ -64,9 +70,11 @@ namespace Tour_API.Controllers
         }
 
         // DELETE api/<ToursController>/5
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("delete/{id:int}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             // check tour exists or not
             var tour = await _tourService.DeleteAsync(id);
             if (tour is null)

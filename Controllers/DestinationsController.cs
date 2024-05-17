@@ -25,16 +25,20 @@ namespace Tour_API.Controllers
         // GET: api/<DestinationsController>
         [HttpGet]
         public async Task<IActionResult> GetAll()
-        {   
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var destinations = await _destinationService.GetAllAsync();
             var destinationDto =  destinations.Select(c => c.ToDestinationDto());
             return Ok(destinationDto);
         }
 
         // GET api/<DestinationsController>/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<IActionResult> Get([FromRoute] int id)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var destination = await _destinationService.GetByIdAsync(id);
             if(destination is null)
                 return NotFound();
@@ -45,15 +49,19 @@ namespace Tour_API.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> Post([FromBody] CreateDestinationDto destinationDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var newDestination = destinationDto.FromCreateDtoToDestination();
             await _destinationService.CreateAsync(newDestination);
             return CreatedAtAction(nameof(Get), new { id = newDestination.Id }, newDestination.ToDestinationDto());
         }
 
         // PUT api/<DestinationsController>/5
-        [HttpPut("edit/{id}")]
+        [HttpPut("edit/{id:int}")]
         public async Task<IActionResult> Put([FromRoute] int id, [FromBody] UpdateDestinationDto destinationDto)
-        {           
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             var destination = await _destinationService.UpdateAsync(id, destinationDto);
             if (destination is null)
                 return NotFound();
@@ -61,9 +69,11 @@ namespace Tour_API.Controllers
         }
 
         // DELETE api/<DestinationsController>/5
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("delete/{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
             // check tour exists or not
             var destination = await _destinationService.DeleteAsync(id);
             if (destination is null)
