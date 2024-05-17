@@ -5,7 +5,6 @@ using Tour_API.DTOs;
 using Tour_API.DTOs.Tours;
 using Tour_API.Mappers;
 using Tour_API.Models;
-using Tour_API.Services;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -42,7 +41,6 @@ namespace Tour_API.Controllers
             var tour = await _context.Tours.FindAsync(id);
             if (tour is null)
                 return NotFound();
-            //tour.Destination = await _context.Destinations.FirstOrDefaultAsync(t => t.Id == tour.DestinationId);
             return Ok(tour.ToTourDto());
         }
 
