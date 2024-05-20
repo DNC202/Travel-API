@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using Tour_API.Data;
 using Tour_API.DTOs;
 using Tour_API.DTOs.Tours;
@@ -29,7 +30,8 @@ namespace Tour_API.Controllers
                 return BadRequest(ModelState);
             var tours = await _tourService.GetAllAsync();
             var toursDto = tours.Select(t => t.ToTourDto());
-            return Ok(tours);
+            var jsonString = JsonSerializer.Serialize(toursDto);
+            return Ok(jsonString);
         }
 
 

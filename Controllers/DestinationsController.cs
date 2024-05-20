@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using Tour_API.Data;
 using Tour_API.DTOs.Destinations;
 using Tour_API.DTOs.Tours;
@@ -30,7 +31,8 @@ namespace Tour_API.Controllers
                 return BadRequest(ModelState);
             var destinations = await _destinationService.GetAllAsync();
             var destinationDto =  destinations.Select(c => c.ToDestinationDto());
-            return Ok(destinationDto);
+            var jsonString = JsonSerializer.Serialize(destinationDto);
+            return Ok(jsonString);
         }
 
         // GET api/<DestinationsController>/5
@@ -42,7 +44,9 @@ namespace Tour_API.Controllers
             var destination = await _destinationService.GetByIdAsync(id);
             if(destination is null)
                 return NotFound();
-            return Ok(destination);
+            var destinationDto = destination.ToDestinationDto();
+            var jsonString = JsonSerializer.Serialize(destinationDto);
+            return Ok(jsonString);
         }
 
         // POST api/<DestinationsController>
@@ -64,7 +68,7 @@ namespace Tour_API.Controllers
                 return BadRequest(ModelState);
             var destination = await _destinationService.UpdateAsync(id, destinationDto);
             if (destination is null)
-                return NotFound();
+                return BadRequest("Destination doesn't exist");
             return NoContent();
         }
 
@@ -77,7 +81,7 @@ namespace Tour_API.Controllers
             // check tour exists or not
             var destination = await _destinationService.DeleteAsync(id);
             if (destination is null)
-                return NotFound();
+                return BadRequest("Destination doesn't exist");
             return NoContent();
         }
     }
