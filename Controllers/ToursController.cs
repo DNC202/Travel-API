@@ -6,6 +6,7 @@ using Tour_API.DTOs;
 using Tour_API.DTOs.Tours;
 using Tour_API.Mappers;
 using Tour_API.Models;
+using Tour_API.Services;
 using Tour_API.Services.TourServices;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -16,8 +17,8 @@ namespace Tour_API.Controllers
     [ApiController]
     public class ToursController : ControllerBase
     {
-        private readonly ITourService _tourService;
-        public ToursController(ITourService tourService)
+        private readonly IService _tourService;
+        public ToursController([FromKeyedServices("tour")] IService tourService)
         {
             _tourService = tourService;
         }
@@ -28,20 +29,19 @@ namespace Tour_API.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var tours = await _tourService.GetAllAsync();
+            var tours = await _tourService.GetAllAsync<Tour>();
             var toursDto = tours.Select(t => t.ToTourDto());
-            var jsonString = JsonSerializer.Serialize(toursDto);
-            return Ok(jsonString);
+            return Ok(toursDto);
         }
 
 
         // GET api/<ToursController>/5
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> Get([FromRoute] int id)
+        public async Task<IActionResult> Get(int id)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var tour = await _tourService.GetByIdAsync(id);
+            var tour = await _tourService.GetByIdAsync<Tour>(id);
             if (tour is null)
                 return NotFound();
             return Ok(tour.ToTourDto());
@@ -49,7 +49,7 @@ namespace Tour_API.Controllers
 
         // POST api/<ToursController>
         [HttpPost("add")]
-        public async Task<IActionResult> AddTour([FromBody] CreateTourDto tourDto)
+        public async Task<IActionResult> AddTour(CreateTourDto tourDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -60,7 +60,7 @@ namespace Tour_API.Controllers
 
         // PUT api/<ToursController>/5
         [HttpPut("edit/{id:int}")]
-        public async Task<IActionResult> EditTour([FromRoute] int id, [FromBody] UpdateTourDto tourDto)
+        public async Task<IActionResult> EditTour(int id, UpdateTourDto tourDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -73,12 +73,12 @@ namespace Tour_API.Controllers
 
         // DELETE api/<ToursController>/5
         [HttpDelete("delete/{id:int}")]
-        public async Task<IActionResult> Delete([FromRoute] int id)
+        public async Task<IActionResult> Delete(int id)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
             // check tour exists or not
-            var tour = await _tourService.DeleteAsync(id);
+            var tour = await _tourService.DeleteAsync<Tour>(id);
             if (tour is null)
                 return NotFound();  
             return NoContent();

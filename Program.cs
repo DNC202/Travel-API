@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Tour_API.Data;
+using Tour_API.Services;
 using Tour_API.Services.DestinationServices;
 using Tour_API.Services.TourServices;
 
@@ -19,8 +21,11 @@ builder.Services.AddDbContext<TourContext>(options =>
     options.UseSqlServer(connectionString);
 });
 
-builder.Services.AddScoped<IDestinationService, DestinationService>();
-builder.Services.AddScoped<ITourService, TourService>();
+builder.Services.AddScoped<DestinationService>();
+builder.Services.AddScoped<TourService>();
+
+builder.Services.AddKeyedScoped<IService, DestinationService>("destination");
+builder.Services.AddKeyedScoped<IService, TourService>("tour");
 
 builder.Services.AddOutputCache(options =>
 {

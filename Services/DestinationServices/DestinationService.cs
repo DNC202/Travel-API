@@ -5,46 +5,52 @@ using Tour_API.Models;
 
 namespace Tour_API.Services.DestinationServices
 {
-    public class DestinationService : IDestinationService
+    public class DestinationService : IService
     {
         private readonly TourContext _context;
         public DestinationService(TourContext context) 
         {
             _context = context;
         }
-        public async Task<List<Destination>> GetAllAsync()
+        public async Task<List<T>> GetAllAsync<T>()
         {
-            return await _context.Destinations.Include(c => c.Tours).ToListAsync();
+            List<Destination> destinations = await _context.Destinations.Include(c => c.Tours).ToListAsync();
+            return destinations.Cast<T>().ToList();
         }
-        public async Task<Destination> GetByIdAsync(int id)
+        public async Task<T> GetByIdAsync<T>(int id)
         {
-            return await _context.Destinations.Include(c => c.Tours).FirstAsync(c => c.Id == id);
+            Destination destination = await _context.Destinations.Include(c => c.Tours).FirstAsync(c => c.Id == id);
+            return (T)(object)destination;
         }
-        public async Task<Destination> CreateAsync(Destination destination)
+        public async Task<T> CreateAsync<T>(T model)
         {
+            var destination = (Destination)(object)model!;
             await _context.Destinations.AddAsync(destination);
             await _context.SaveChangesAsync();
-            return destination;
+            return (T)(object)destination;
         }
 
-        public async Task<Destination> UpdateAsync(int id, UpdateDestinationDto destinationDto)
+        public async Task<T> UpdateAsync<T>(int id, T model)
         {
             var updateDestination = await _context.Destinations.FirstOrDefaultAsync(c => c.Id == id);
-            if (updateDestination == null) return null;
+            if (updateDestination == null) 
+                return (T)(object)null!;
+            var destinationDto = (UpdateDestinationDto)(object)model!;
             updateDestination.Name = destinationDto.Name;
             updateDestination.Description = destinationDto.Description;
             updateDestination.Image = destinationDto.Image;
             await _context.SaveChangesAsync();
-            return updateDestination;
+            return (T)(object)updateDestination;
         }
 
-        public async Task<Destination> DeleteAsync(int id)
+        public async Task<T> DeleteAsync<T>(int id)
         {
             var deleteDestination = await _context.Destinations.FirstOrDefaultAsync(c => c.Id == id);
-            if (deleteDestination == null) { return null; }
+            if (deleteDestination == null)
+                return (T)(object)null!; 
             _context.Destinations.Remove(deleteDestination);
             await _context.SaveChangesAsync();
-            return deleteDestination;
+            return (T)(object)deleteDestination;
         }
     }
 }

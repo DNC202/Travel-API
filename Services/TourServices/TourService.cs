@@ -5,32 +5,37 @@ using Tour_API.Models;
 
 namespace Tour_API.Services.TourServices
 {
-    public class TourService : ITourService
+    public class TourService : IService
     {
         private readonly TourContext _context;
         public TourService(TourContext context)
         {
             _context = context;
         }
-        public async Task<List<Tour>> GetAllAsync()
+        public async Task<List<T>> GetAllAsync<T>()
         {
-            return await _context.Tours.ToListAsync();
+            var tours = await _context.Tours.ToListAsync();
+            return tours.Cast<T>().ToList();
         }
-        public async Task<Tour> GetByIdAsync(int id)
+        public async Task<T> GetByIdAsync<T>(int id)
         {
-            return await _context.Tours.FirstAsync(c => c.Id == id);
+            var tour = await _context.Tours.FirstAsync(c => c.Id == id);
+            return (T)(object)tour;
         }
-        public async Task<Tour> CreateAsync(Tour tour)
+        public async Task<T> CreateAsync<T>(T model)
         {
+            var tour = (Tour)(object)model!;
             await _context.Tours.AddAsync(tour);
             await _context.SaveChangesAsync();
-            return tour;
+            return (T)(object)tour;
         }
 
-        public async Task<Tour> UpdateAsync(int id, UpdateTourDto tourDto)
+        public async Task<T> UpdateAsync<T>(int id, T model)
         {
             var updateTour = await _context.Tours.FirstOrDefaultAsync(c => c.Id == id);
-            if (updateTour == null) return null;
+            if (updateTour == null) 
+                return (T)(object)null!;
+            var tourDto = (Tour)(object)model!;
             updateTour.Title = tourDto.Title;
             updateTour.DestinationId = tourDto.DestinationId;
             updateTour.Categories = tourDto.Categories;
@@ -39,16 +44,17 @@ namespace Tour_API.Services.TourServices
             updateTour.Duration = tourDto.Duration;
             updateTour.Thumbnail = tourDto.Thumbnail;
             await _context.SaveChangesAsync();
-            return updateTour;
+            return (T)(object)updateTour;
         }
 
-        public async Task<Tour> DeleteAsync(int id)
+        public async Task<T> DeleteAsync<T>(int id)
         {
             var deleteTour = await _context.Tours.FirstOrDefaultAsync(c => c.Id == id);
-            if (deleteTour == null) { return null; }
+            if (deleteTour == null)  
+                return (T)(object)null!; 
             _context.Tours.Remove(deleteTour);
             await _context.SaveChangesAsync();
-            return deleteTour;
+            return (T)(object)deleteTour;
         }
     }
 }
