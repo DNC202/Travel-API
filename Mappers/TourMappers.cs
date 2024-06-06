@@ -11,7 +11,6 @@ namespace Tour_API.Mappers
             {
                 Id = tourModel.Id,
                 Title = tourModel.Title,
-                Categories = tourModel.Categories!,
                 DestinationId = tourModel.DestinationId,
                 Rating = tourModel.Rating,
                 Price = tourModel.Price,
@@ -25,7 +24,6 @@ namespace Tour_API.Mappers
             return new Tour
             {
                 Title = tourDto.Title,
-                Categories = tourDto.Categories,
                 DestinationId = tourDto.DestinationId,
                 Rating = tourDto.Rating,
                 Price = tourDto.Price,

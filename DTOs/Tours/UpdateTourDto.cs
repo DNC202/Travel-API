@@ -5,7 +5,6 @@ namespace Tour_API.DTOs.Tours
     public class UpdateTourDto
     {
         private string? title;
-        private string[]? categories;
         private int destinationId;
         private double rating;
         private double price;
@@ -16,8 +15,6 @@ namespace Tour_API.DTOs.Tours
         [MinLength(10, ErrorMessage = "Title must be 10 characters")]
         [MaxLength(200, ErrorMessage = "Title cannot be over 200 characters")]
         public string? Title { get => title; set => title = value; }
-        [Required]
-        public string[]? Categories { get => categories; set => categories = value; }
         [Required]
         public int DestinationId { get => destinationId; set => destinationId = value; }
         [Range(1, 5)]
