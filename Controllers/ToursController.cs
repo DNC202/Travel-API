@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using Tour_API.Data;
 using Tour_API.DTOs;
+using Tour_API.DTOs.Destinations;
 using Tour_API.DTOs.Tours;
 using Tour_API.Helpers;
 using Tour_API.Interfaces;
@@ -20,9 +21,11 @@ namespace Tour_API.Controllers
     public class ToursController : ControllerBase
     {
         private readonly ITourService _tourService;
-        public ToursController(ITourService tourService)
+        private readonly IUploadFileService _uploadFileService;
+        public ToursController(ITourService tourService, IUploadFileService uploadFileService)
         {
             _tourService = tourService;
+            _uploadFileService = uploadFileService;
         }
 
         // GET: api/<ToursController>
@@ -45,13 +48,36 @@ namespace Tour_API.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddTour([FromBody] CreateTourDto tourDto)
+        public async Task<IActionResult> AddTour([FromForm] CreateTourDto tourDto, IFormFile file) 
         {
-            var newTour = tourDto.FromCreateDtoToTour();
-            await _tourService.CreateAsync(newTour);
-            return CreatedAtAction(nameof(Get), new { id = newTour.Id }, newTour.ToTourDto());
+            try
+            {
+                var uri = await _uploadFileService.UploadFileAsync(file);
+                tourDto.Thumbnail = uri;
+                var newTour = tourDto.FromCreateDtoToTour();
+                await _tourService.CreateAsync(newTour);
+                return CreatedAtAction(nameof(Get), new { id = newTour.Id }, newTour.ToTourDto());
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
+        [HttpPost("upload")]
+        public async Task<IActionResult> UploadFile(IFormFile file)
+        {
+            try
+            {
+                var urlFile = await _uploadFileService.UploadFileAsync(file);
+                var jsonString = JsonSerializer.Serialize(urlFile);
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
         // PUT api/<ToursController>/5
         [HttpPut("edit/{id}")]
         public async Task<IActionResult> EditTour([FromRoute] int id, [FromBody] UpdateTourDto tourDto)
@@ -68,9 +94,18 @@ namespace Tour_API.Controllers
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
             // check tour exists or not
-            var tour = await _tourService.DeleteAsync(id);
+            var tour = await _tourService.GetByIdAsync(id);
             if (tour is null)
                 return NotFound();
+            // get blobname from url image
+            Uri uri = new Uri(tour.Thumbnail!);
+            string blobName = uri.Segments.Last();
+            // delete tour
+            var result = await _tourService.DeleteAsync(id);
+            if(result is null)
+                return NotFound();
+            // delete blob file
+            await _uploadFileService.DeleteFileAsync(blobName);
             return NoContent();
         }
     }
