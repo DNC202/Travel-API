@@ -81,18 +81,11 @@ namespace Tour_API.Controllers
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            try
-            {
-                var result = await _tourService.DeleteAsync(id);
-                if (result is null)
-                    return NotFound();
-                return Ok("Tour deleted successfully");
-            }
-            catch(Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-            
+            // check tour exists or not
+            var tour = await _tourService.DeleteAsync(id);
+            if (tour is null)
+                return NotFound();
+            return NoContent();
         }
     }
 }
