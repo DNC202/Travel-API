@@ -10,10 +10,12 @@ using Tour_API.Models;
 using Tour_API.Services.AccountServices;
 using Tour_API.Services.DestinationServices;
 using Tour_API.Services.TourServices;
+using Tour_API.Services.UploadFileServices;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
+var azureConnectionString = builder.Configuration["BlobStorage:ConnectionString"];
+var containerName = builder.Configuration["BlobStorage:ContainerName"];
 // Add services to the container.
 
 builder.Services.AddControllersWithViews()
@@ -26,6 +28,8 @@ builder.Services.AddDbContext<Tour_API.Data.ApplicationDBContext>(options =>
 {
     options.UseSqlServer(connectionString);
 });
+
+builder.Services.AddScoped<IUploadFileService>(sp => new UploadFileService(azureConnectionString, containerName));
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
@@ -54,7 +58,7 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["JWT:Audience"],
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(
-            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"]))
+            System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"]!))
     };
 });
 

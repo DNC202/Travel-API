@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using Tour_API.Data;
 using Tour_API.DTOs;
+using Tour_API.DTOs.Destinations;
 using Tour_API.DTOs.Tours;
 using Tour_API.Helpers;
 using Tour_API.Interfaces;
@@ -45,33 +46,53 @@ namespace Tour_API.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddTour([FromBody] CreateTourDto tourDto)
+        public async Task<IActionResult> AddTour([FromForm] CreateTourDto tourDto, IFormFile file)
         {
-            var newTour = tourDto.FromCreateDtoToTour();
-            await _tourService.CreateAsync(newTour);
-            return CreatedAtAction(nameof(Get), new { id = newTour.Id }, newTour.ToTourDto());
+            try
+            { 
+                await _tourService.CreateAsync(tourDto, file);
+                return Ok(tourDto);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
-
         // PUT api/<ToursController>/5
         [HttpPut("edit/{id}")]
-        public async Task<IActionResult> EditTour([FromRoute] int id, [FromBody] UpdateTourDto tourDto)
+        public async Task<IActionResult> EditTour([FromRoute] int id, [FromForm] UpdateTourDto tourDto, IFormFile file)
         {
-            var updateTour = await _tourService.UpdateAsync(id, tourDto);
-            // check tour exists or not
-            if (updateTour is null)
-                return NotFound();
-            return NoContent();
+            try
+            {
+                var updateTour = await _tourService.UpdateAsync(id, tourDto, file);
+                // check tour exists or not
+                if (updateTour is null)
+                    return NotFound();
+                return Ok(updateTour.ToTourDto());
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+            
         }
 
         // DELETE api/<ToursController>/5
         [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
-            // check tour exists or not
-            var tour = await _tourService.DeleteAsync(id);
-            if (tour is null)
-                return NotFound();
-            return NoContent();
+            try
+            {
+                var result = await _tourService.DeleteAsync(id);
+                if (result is null)
+                    return NotFound();
+                return Ok("Tour deleted successfully");
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+            
         }
     }
 }

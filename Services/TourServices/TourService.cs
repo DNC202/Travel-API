@@ -5,6 +5,7 @@ using Tour_API.Helpers;
 using Tour_API.Interfaces;
 using Tour_API.Mappers;
 using Tour_API.Models;
+using Tour_API.Services.UploadFileServices;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Tour_API.Services.TourServices
@@ -12,9 +13,11 @@ namespace Tour_API.Services.TourServices
     public class TourService : ITourService
     {
         private readonly ApplicationDBContext _context;
-        public TourService(ApplicationDBContext context)
+        private readonly IUploadFileService _uploadFileService;
+        public TourService(ApplicationDBContext context, IUploadFileService uploadFileService)
         {
             _context = context;
+            _uploadFileService = uploadFileService;
         }
         public async Task<List<Tour>> GetAllAsync(QueryObject query)
         {
@@ -44,23 +47,36 @@ namespace Tour_API.Services.TourServices
         {
             return await _context.Tours.FirstAsync(c => c.Id == id);
         }
-        public async Task<Tour> CreateAsync(Tour tour)
+        public async Task<Tour> CreateAsync(CreateTourDto tourDto, IFormFile file)
         {
-            await _context.Tours.AddAsync(tour);
+            var uri = await _uploadFileService.UploadFileAsync(file);
+            tourDto.Thumbnail = uri;
+            var newTour = tourDto.FromCreateDtoToTour();
+            await _context.Tours.AddAsync(newTour);
             await _context.SaveChangesAsync();
-            return tour;
+            return newTour;
         }
 
-        public async Task<Tour> UpdateAsync(int id, UpdateTourDto tourDto)
+        public async Task<Tour> UpdateAsync(int id, UpdateTourDto tourDto, IFormFile file)
         {
             var updateTour = await _context.Tours.FirstOrDefaultAsync(c => c.Id == id);
-            if (updateTour == null) return null!;
+            if (updateTour == null) 
+                return null!;
+            // get blobname from url image
+            Uri uri = new Uri(updateTour.Thumbnail!);
+            string blobName = uri.Segments.Last();
+            // delete blob file
+            await _uploadFileService.DeleteFileAsync(blobName);
+
+            // upload new file
+            var newImageUri = await _uploadFileService.UploadFileAsync(file);
+
             updateTour.Title = tourDto.Title;
             updateTour.DestinationId = tourDto.DestinationId;
             updateTour.Rating = tourDto.Rating;
             updateTour.Price = tourDto.Price;
             updateTour.Duration = tourDto.Duration;
-            updateTour.Thumbnail = tourDto.Thumbnail;
+            updateTour.Thumbnail = newImageUri;
             await _context.SaveChangesAsync();
             return updateTour;
         }
@@ -68,7 +84,15 @@ namespace Tour_API.Services.TourServices
         public async Task<Tour> DeleteAsync(int id)
         {
             var deleteTour = await _context.Tours.FirstOrDefaultAsync(c => c.Id == id);
-            if (deleteTour == null) { return null!; }
+            // check tour exists or not
+            if (deleteTour == null)  
+                return null!;
+            // get blobname from url image
+            Uri uri = new Uri(deleteTour.Thumbnail!);
+            string blobName = uri.Segments.Last();
+            // delete blob file
+            await _uploadFileService.DeleteFileAsync(blobName);
+            // delete tour
             _context.Tours.Remove(deleteTour);
             await _context.SaveChangesAsync();
             return deleteTour;
