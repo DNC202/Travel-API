@@ -41,7 +41,15 @@ namespace Tour_API.Services.TourServices
                     tours = query.IsDecsending ? tours.OrderByDescending(t => t.Rating) : tours.OrderBy(t => t.Rating);
                 }
             }
-            return await tours.ToListAsync();
+            /*return await tours.ToListAsync();*/
+            List<Tour> listTours = await tours.ToListAsync();
+            foreach(var tour in listTours)
+            {
+                var sasUri = await _uploadFileService.GetBlobUriWithSasToken(tour.Thumbnail!);
+                tour.Thumbnail = sasUri;
+            }
+            return listTours;
+
         }
         public async Task<Tour> GetByIdAsync(int id)
         {

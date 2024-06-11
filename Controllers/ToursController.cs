@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -21,9 +22,11 @@ namespace Tour_API.Controllers
     public class ToursController : ControllerBase
     {
         private readonly ITourService _tourService;
-        public ToursController(ITourService tourService)
+        private readonly IUploadFileService _uploadFileService;   
+        public ToursController(ITourService tourService, IUploadFileService uploadFileService)
         {
             _tourService = tourService;
+            _uploadFileService = uploadFileService;
         }
 
         // GET: api/<ToursController>
