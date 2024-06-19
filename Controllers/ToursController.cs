@@ -22,8 +22,8 @@ namespace Tour_API.Controllers
     public class ToursController : ControllerBase
     {
         private readonly ITourService _tourService;
-        private readonly IUploadFileService _uploadFileService;   
-        public ToursController(ITourService tourService, IUploadFileService uploadFileService)
+        private readonly IBlobService _uploadFileService;   
+        public ToursController(ITourService tourService, IBlobService uploadFileService)
         {
             _tourService = tourService;
             _uploadFileService = uploadFileService;
@@ -52,9 +52,10 @@ namespace Tour_API.Controllers
         public async Task<IActionResult> AddTour([FromForm] CreateTourDto tourDto, IFormFile file)
         {
             try
-            { 
-                await _tourService.CreateAsync(tourDto, file);
-                return Ok(tourDto);
+            {
+                var newTour = tourDto.FromCreateDtoToTour();
+                await _tourService.CreateAsync(newTour, file);
+                return Ok(newTour);
             }
             catch (Exception ex)
             {

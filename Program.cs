@@ -29,7 +29,7 @@ builder.Services.AddDbContext<Tour_API.Data.ApplicationDBContext>(options =>
     options.UseSqlServer(connectionString);
 });
 
-builder.Services.AddScoped<IUploadFileService>(sp => new UploadFileService(azureConnectionString, containerName));
+builder.Services.AddScoped<IBlobService>(sp => new BlobService(azureConnectionString, containerName));
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {

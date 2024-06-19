@@ -13,8 +13,8 @@ namespace Tour_API.Services.TourServices
     public class TourService : ITourService
     {
         private readonly ApplicationDBContext _context;
-        private readonly IUploadFileService _uploadFileService;
-        public TourService(ApplicationDBContext context, IUploadFileService uploadFileService)
+        private readonly IBlobService _uploadFileService;
+        public TourService(ApplicationDBContext context, IBlobService uploadFileService)
         {
             _context = context;
             _uploadFileService = uploadFileService;
@@ -43,10 +43,11 @@ namespace Tour_API.Services.TourServices
             }
             /*return await tours.ToListAsync();*/
             List<Tour> listTours = await tours.ToListAsync();
-            foreach(var tour in listTours)
+            var sasContainer = await _uploadFileService.GetContainerSasToken();
+            var parts = sasContainer.Split(new[] { '?' }, 2);
+            foreach (var tour in listTours)
             {
-                var sasUri = await _uploadFileService.GetBlobUriWithSasToken(tour.Thumbnail!);
-                tour.Thumbnail = sasUri;
+                tour.Thumbnail = $"{parts[0]}/{tour.Thumbnail}?{parts[1]}";
             }
             return listTours;
 
@@ -55,12 +56,12 @@ namespace Tour_API.Services.TourServices
         {
             return await _context.Tours.FirstAsync(c => c.Id == id);
         }
-        public async Task<Tour> CreateAsync(CreateTourDto tourDto, IFormFile file)
+        public async Task<Tour> CreateAsync(Tour newTour, IFormFile file)
         {
-            var uri = await _uploadFileService.UploadFileAsync(file);
-            tourDto.Thumbnail = uri;
-            var newTour = tourDto.FromCreateDtoToTour();
             await _context.Tours.AddAsync(newTour);
+            await _context.SaveChangesAsync();
+            var blobName = await _uploadFileService.UploadFileAsync(file, newTour.Id);
+            newTour.Thumbnail = blobName;
             await _context.SaveChangesAsync();
             return newTour;
         }
@@ -70,14 +71,11 @@ namespace Tour_API.Services.TourServices
             var updateTour = await _context.Tours.FirstOrDefaultAsync(c => c.Id == id);
             if (updateTour == null) 
                 return null!;
-            // get blobname from url image
-            Uri uri = new Uri(updateTour.Thumbnail!);
-            string blobName = uri.Segments.Last();
             // delete blob file
-            await _uploadFileService.DeleteFileAsync(blobName);
+            await _uploadFileService.DeleteFileAsync(updateTour.Thumbnail!);
 
             // upload new file
-            var newImageUri = await _uploadFileService.UploadFileAsync(file);
+            var newImageUri = await _uploadFileService.UploadFileAsync(file, updateTour.Id);
 
             updateTour.Title = tourDto.Title;
             updateTour.DestinationId = tourDto.DestinationId;
@@ -95,11 +93,8 @@ namespace Tour_API.Services.TourServices
             // check tour exists or not
             if (deleteTour == null)  
                 return null!;
-            // get blobname from url image
-            Uri uri = new Uri(deleteTour.Thumbnail!);
-            string blobName = uri.Segments.Last();
             // delete blob file
-            await _uploadFileService.DeleteFileAsync(blobName);
+            await _uploadFileService.DeleteFileAsync(deleteTour.Thumbnail!);
             // delete tour
             _context.Tours.Remove(deleteTour);
             await _context.SaveChangesAsync();

@@ -8,7 +8,7 @@ namespace Tour_API.Interfaces
     {
         Task<List<Tour>> GetAllAsync(QueryObject query);
         Task<Tour> GetByIdAsync(int id);
-        Task<Tour> CreateAsync(CreateTourDto tourDto, IFormFile file);
+        Task<Tour> CreateAsync(Tour newTour, IFormFile file);
         Task<Tour> UpdateAsync(int id, UpdateTourDto TourDto, IFormFile file);
         Task<Tour> DeleteAsync(int id);
     }

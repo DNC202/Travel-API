@@ -7,17 +7,17 @@ using Tour_API.Interfaces;
 
 namespace Tour_API.Services.UploadFileServices
 {
-    public class UploadFileService : IUploadFileService
+    public class BlobService : IBlobService
     {
         private readonly string _connectionString;
         private readonly string _containerName;
 
-        public UploadFileService(string connectionString, string containerName)
+        public BlobService(string connectionString, string containerName)
         {
             _connectionString = connectionString;
             _containerName = containerName;
         }
-        public async Task<string> UploadFileAsync(IFormFile file)
+        public async Task<string> UploadFileAsync(IFormFile file, int id)
         {
             if (file == null || file.Length == 0)
                 return "No file uploaded.";
@@ -28,13 +28,14 @@ namespace Tour_API.Services.UploadFileServices
             await file.CopyToAsync(stream);
             stream.Position = 0;
             await blobContainerClient.CreateIfNotExistsAsync();
-            var blobClient = blobContainerClient.GetBlobClient(file.FileName);
+            var blobName = $"{id}{Path.GetExtension(file.FileName)}";
+            var blobClient = blobContainerClient.GetBlobClient(blobName);
             if (await blobClient.ExistsAsync())
             {
                 await blobClient.DeleteAsync();
             }
-            await blobContainerClient.UploadBlobAsync(file.FileName, stream);
-            return blobContainerClient.Uri.ToString() + "/" + file.FileName;
+            await blobContainerClient.UploadBlobAsync(blobName, stream);
+            return blobName;
         }
 
         public async Task DeleteFileAsync(string blobName)
@@ -44,22 +45,20 @@ namespace Tour_API.Services.UploadFileServices
             await blobContainerCLient.GetBlobClient(blobName).DeleteAsync();
         }
 
-        public async Task<string> GetBlobUriWithSasToken(string blobUri)
+        public async Task<string> GetContainerSasToken()
         {
-            var uri = new Uri(blobUri);
-            var blobName = uri.Segments.Last();
             var blobServiceClient = new BlobServiceClient(_connectionString);
             var blobContainerClient = blobServiceClient.GetBlobContainerClient(_containerName);
-            var blobClient = blobContainerClient.GetBlobClient(blobName);
+
 
             BlobSasBuilder blobSasBuilder = new BlobSasBuilder()
             {
                 StartsOn = DateTime.UtcNow,
                 ExpiresOn = DateTime.UtcNow.AddMinutes(10),
-                Resource = "b"
+                Resource = "c"
             };
             blobSasBuilder.SetPermissions(BlobAccountSasPermissions.Read);
-            var sasUri = blobClient.GenerateSasUri(blobSasBuilder);
+            var sasUri = blobContainerClient.GenerateSasUri(blobSasBuilder);
             return sasUri.ToString();
         }
     }
