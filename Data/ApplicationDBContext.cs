@@ -33,7 +33,7 @@ namespace Tour_API.Data
                 }
             };
             modelBuilder.Entity<IdentityRole>().HasData(roles);
-            /*modelBuilder.Entity<Destination>().HasData(
+            modelBuilder.Entity<Destination>().HasData(
                 new Destination
                 {
                     Id = 1,
@@ -65,8 +65,8 @@ namespace Tour_API.Data
                     Image = "london.jpg",
                     Description = "Historical and cultural capital"
                 }
-            );*/
-            /*modelBuilder.Entity<Tour>().HasData(
+            );
+            modelBuilder.Entity<Tour>().HasData(
                 new Tour
                 {
                     Id = 1,
@@ -147,7 +147,7 @@ namespace Tour_API.Data
                     Duration = "7 days 6 nights",
                     Thumbnail = "tour-1.jpg"
                 }
-            );*/
+            );
         }
     }
 }

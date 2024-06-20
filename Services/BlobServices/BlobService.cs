@@ -1,7 +1,9 @@
 ﻿using Azure.Storage;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using Microsoft.AspNetCore.WebUtilities;
+using System.ComponentModel;
 using System.Web;
 using Tour_API.Interfaces;
 
@@ -27,14 +29,16 @@ namespace Tour_API.Services.UploadFileServices
             var stream = new MemoryStream();
             await file.CopyToAsync(stream);
             stream.Position = 0;
+
             await blobContainerClient.CreateIfNotExistsAsync();
+            /*if (createResponse != null && createResponse.GetRawResponse().Status == 201)
+                await blobContainerClient.SetAccessPolicyAsync(PublicAccessType.Blob);*/
+
             var blobName = $"{id}{Path.GetExtension(file.FileName)}";
             var blobClient = blobContainerClient.GetBlobClient(blobName);
-            if (await blobClient.ExistsAsync())
-            {
-                await blobClient.DeleteAsync();
-            }
+            await blobClient.DeleteIfExistsAsync();
             await blobContainerClient.UploadBlobAsync(blobName, stream);
+            await blobClient.SetAccessTierAsync(AccessTier.Cool);
             return blobName;
         }
 
@@ -42,7 +46,7 @@ namespace Tour_API.Services.UploadFileServices
         {
             var blobServiceClient = new BlobServiceClient(_connectionString);
             var blobContainerCLient = blobServiceClient.GetBlobContainerClient(_containerName);
-            await blobContainerCLient.GetBlobClient(blobName).DeleteAsync();
+            await blobContainerCLient.GetBlobClient(blobName).DeleteIfExistsAsync();
         }
 
         public async Task<string> GetContainerSasToken()

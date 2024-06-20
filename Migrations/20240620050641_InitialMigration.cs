@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Tour_API.Migrations
 {
     /// <inheritdoc />
@@ -193,6 +195,41 @@ namespace Tour_API.Migrations
                         principalTable: "Destinations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "0ffe6e05-7c7d-416e-9e50-33e6eb251bae", null, "Admin", "ADMIN" },
+                    { "da2cec90-1f75-45ad-a0e3-fc382d55b756", null, "User", "USER" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Destinations",
+                columns: new[] { "Id", "Description", "Image", "Name" },
+                values: new object[,]
+                {
+                    { 1, "The city of love", "paris.jpg", "Paris" },
+                    { 2, "Vibrant and bustling metropolis", "tokyo.jpg", "Tokyo" },
+                    { 3, "The Big Apple", "new-york.jpg", "New York" },
+                    { 4, "Historical and cultural capital", "london.jpg", "London" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Tours",
+                columns: new[] { "Id", "DestinationId", "Duration", "Price", "Rating", "Thumbnail", "Title" },
+                values: new object[,]
+                {
+                    { 1, 3, "4 days 3 nights", 119.98999999999999, 4.7999999999999998, "tour-1.jpg", "Adventure in the Alps" },
+                    { 2, 4, "6 days 5 nights", 89.989999999999995, 4.5, "tour-1.jpg", "Himalayan Escape" },
+                    { 3, 2, "3 days 2 nights", 109.98999999999999, 4.9000000000000004, "tour-1.jpg", "Rocky Mountain Adventure" },
+                    { 4, 1, "7 days 6 nights", 129.99000000000001, 4.5999999999999996, "tour-1.jpg", "Serene Mountain Journey" },
+                    { 5, 2, "5 days 4 nights", 99.989999999999995, 4.7000000000000002, "tour-1.jpg", "Peak Exploration" },
+                    { 6, 4, "6 days 5 nights", 139.99000000000001, 4.5, "tour-1.jpg", "Highland Trails" },
+                    { 7, 1, "5 days 4 nights", 149.99000000000001, 4.7999999999999998, "tour-1.jpg", "Summit Challenge" },
+                    { 8, 3, "7 days 6 nights", 119.98999999999999, 4.9000000000000004, "tour-1.jpg", "Alpine Discovery" }
                 });
 
             migrationBuilder.CreateIndex(

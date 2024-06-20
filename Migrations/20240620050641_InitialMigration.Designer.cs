@@ -12,8 +12,8 @@ using Tour_API.Data;
 namespace Tour_API.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20240603152046_SeedDestination")]
-    partial class SeedDestination
+    [Migration("20240620050641_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,6 +50,20 @@ namespace Tour_API.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "0ffe6e05-7c7d-416e-9e50-33e6eb251bae",
+                            Name = "Admin",
+                            NormalizedName = "ADMIN"
+                        },
+                        new
+                        {
+                            Id = "da2cec90-1f75-45ad-a0e3-fc382d55b756",
+                            Name = "User",
+                            NormalizedName = "USER"
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -241,6 +255,88 @@ namespace Tour_API.Migrations
                     b.HasIndex("DestinationId");
 
                     b.ToTable("Tours");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            DestinationId = 3,
+                            Duration = "4 days 3 nights",
+                            Price = 119.98999999999999,
+                            Rating = 4.7999999999999998,
+                            Thumbnail = "tour-1.jpg",
+                            Title = "Adventure in the Alps"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            DestinationId = 4,
+                            Duration = "6 days 5 nights",
+                            Price = 89.989999999999995,
+                            Rating = 4.5,
+                            Thumbnail = "tour-1.jpg",
+                            Title = "Himalayan Escape"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            DestinationId = 2,
+                            Duration = "3 days 2 nights",
+                            Price = 109.98999999999999,
+                            Rating = 4.9000000000000004,
+                            Thumbnail = "tour-1.jpg",
+                            Title = "Rocky Mountain Adventure"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            DestinationId = 1,
+                            Duration = "7 days 6 nights",
+                            Price = 129.99000000000001,
+                            Rating = 4.5999999999999996,
+                            Thumbnail = "tour-1.jpg",
+                            Title = "Serene Mountain Journey"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            DestinationId = 2,
+                            Duration = "5 days 4 nights",
+                            Price = 99.989999999999995,
+                            Rating = 4.7000000000000002,
+                            Thumbnail = "tour-1.jpg",
+                            Title = "Peak Exploration"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            DestinationId = 4,
+                            Duration = "6 days 5 nights",
+                            Price = 139.99000000000001,
+                            Rating = 4.5,
+                            Thumbnail = "tour-1.jpg",
+                            Title = "Highland Trails"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            DestinationId = 1,
+                            Duration = "5 days 4 nights",
+                            Price = 149.99000000000001,
+                            Rating = 4.7999999999999998,
+                            Thumbnail = "tour-1.jpg",
+                            Title = "Summit Challenge"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            DestinationId = 3,
+                            Duration = "7 days 6 nights",
+                            Price = 119.98999999999999,
+                            Rating = 4.9000000000000004,
+                            Thumbnail = "tour-1.jpg",
+                            Title = "Alpine Discovery"
+                        });
                 });
 
             modelBuilder.Entity("Tour_API.Models.User", b =>
